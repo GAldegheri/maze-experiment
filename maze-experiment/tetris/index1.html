@@ -2,274 +2,283 @@
 <html>
 
 <head>
-    <title>Maze Navigation Experiment</title>
-    <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" type="text/css" />
-    <script src="https://unpkg.com/jspsych@8.2.1"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.1.0"></script>
+<title>Maze Navigation Experiment</title>
+<link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" type="text/css" />
+<script src="https://unpkg.com/jspsych@8.2.1"></script>
+<script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
+<script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+<script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.1.0"></script>
 </head>
 
 <body>
-    <div id="jspsych-target"></div>
-    
-    <script>
-        // --- Experiment Parameters ---
-        const base_image_path = "https://raw.githubusercontent.com/basakguvensin/maze-images/main/images/";
-        
-        // Your maze images
-        const maze_images = [
-            "maze_closer.png",
-            "maze_closest.png", 
-            "maze_goal.png",
-            "maze_initial.png"
-        ];
-        
-        const target_image = "maze_goal.png"; // The target image participants should respond to
-        const nTrialsPerImage = 10; // How many times each image appears
-        const targetRepeats = 3; // How many times target appears per cycle
+<div id="jspsych-target"></div>
 
-        const iti = 1200; // Inter-trial interval (msec)
-        const shapePresentationDuration = 600; // Image display duration (msec)
+<script>
+// --- Experiment Parameters ---
+const base_image_path = "https://raw.githubusercontent.com/basakguvensin/maze-images/main/images/";
 
-        const feedbackColor = '#008000'; // Green for correct responses
-        const wrongColor = '#FF0000'; // Red for incorrect responses
-        const feedbackDuration = 300; // How long the border color stays changed after a response
+// Your maze images
+const maze_images = [
+"maze_closer.png",
+"maze_closest.png",
+"maze_goal.png",
+"maze_initial.png"
+];
 
-        async function runExperiment() {
-            const jsPsych = initJsPsych({
-                on_finish: function (data) {
-                    document.body.innerHTML = `
-                        <div id="doneText" style="text-align: center; padding: 20px;">
-                            <strong>Done! Thank you for your participation.</strong>
-                        </div>
-                    `;
-                },
-                show_progress_bar: true,
-                message_progress_bar: 'Progress',
-                auto_update_progress_bar: false
-            });
+const target_image = "maze_goal.png"; // The target image participants should respond to
+const nTrialsPerImage = 15; // How many times each image appears
+const targetRepeats = 5; // How many times target appears per cycle
 
-            // --- Preload Images ---
-            const preload_images = maze_images.map(img => base_image_path + img);
+const iti = 1200; // Inter-trial interval (msec)
+const shapePresentationDuration = 600; // Image display duration (msec)
 
-            const preload_trial = {
-                type: jsPsychPreload,
-                images: preload_images,
-                message: 'Loading experiment. Please wait...',
-            };
+const feedbackColor = '#008000'; // Green for correct responses
+const wrongColor = '#FF0000'; // Red for incorrect responses
+const feedbackDuration = 300; // How long the border color stays changed after a response
 
-            // --- Instructions Page ---
-            const instructions_page_1 = {
-                type: jsPsychHtmlKeyboardResponse,
-                stimulus: `
-                    <div id="instructions-container">
-                        <p id="title"><strong>Find the right piece!</strong></p>
-                        <p>In this HIT, you will see some blocky shapes appear in the rectangle below. Sometimes they will look like one big block, sometimes they will look like a block with a cutout, sometimes they will have pieces missing or floating in the air. Your job is to pay careful attention to these blocks, and <strong>press the spacebar only when you see the exact block below</strong>:</p>
-                        <div style="text-align: center;">
-                            <img id="exampleImage" src="${base_image_path}maze_goal.png" style="max-width: 250px;">
-                        </div>
-                        <p>You can also see examples of this and other kinds of blocks flashing below, which will give you an idea of when you should and shouldn't respond. Again, only press the spacebar for the image you see above!</p>
-                        <p>The images will only flash for one second each, so act quickly!</p>
-                        <p>If the computer recognizes your button press, the border of the box will briefly turn green. Please test this out now: Press the spacebar a few times, and make sure the border turns green. If it does not, you may not be eligible for this HIT.</p>
-                        <p>The whole HIT will only take a few minutes; please stay focused!</p>
-                        <p>Are you ready to begin? If so, click "Start Experiment". By completing this survey or questionnaire, you are consenting to be in this research study. Your participation is voluntary and you can stop at any time.</p>
-                        <p style ="font-size:8pt">(Note: When the experiment is done, you will be told it is done, and then you can click the 'submit' button. If that fails to work, the HIT should "auto-submit" after 1 minute)</p>
-                        <button id="startExperimentButton" class="jspsych-btn">Start Experiment</button>
-                    </div>
-                    <div id="gif-feedback-container" class="trial-display-container">
-                       <img id="instructionGif" src="${base_image_path}instruction_maze.gif" style="max-width: 100%; max-height: 100%; display: block;">
-                    </div>
-                    <button id="submitButton" class="jspsych-btn">Submit</button>
-                    `,
-                choices: "NO_KEYS",
-                on_load: function () {
-                    const startButton = document.getElementById('startExperimentButton');
-                    const gifFeedbackContainer = document.getElementById('gif-feedback-container');
+async function runExperiment() {
+const jsPsych = initJsPsych({
+on_finish: function (data) {
+document.body.innerHTML = `
+<div id="doneText" style="text-align: center; padding: 20px;">
+<strong>Done! Thank you for your participation.</strong>
+</div>
+`;
+},
+show_progress_bar: true,
+message_progress_bar: 'Progress',
+auto_update_progress_bar: false
+});
 
-                    const testSpacebarHandler = (e) => {
-                        if (e.key === ' ') {
-                            gifFeedbackContainer.style.border = `10px solid ${feedbackColor}`;
-                            setTimeout(() => {
-                                gifFeedbackContainer.style.border = '10px solid black';
-                            }, feedbackDuration);
-                        }
-                    };
+// --- Preload Images ---
+const preload_images = maze_images.map(img => base_image_path + img);
 
-                    document.addEventListener('keydown', testSpacebarHandler);
+const preload_trial = {
+type: jsPsychPreload,
+images: preload_images,
+message: 'Loading experiment. Please wait...',
+};
 
-                    startButton.onclick = () => {
-                        document.removeEventListener('keydown', testSpacebarHandler);
-                        jsPsych.finishTrial();
-                    };
-                },
-                trial_duration: null,
-            };
-            // --- End Instructions Page 1 ---
+// --- Instructions Page ---
+const instructions_page_1 = {
+type: jsPsychHtmlKeyboardResponse,
+stimulus: `
+<div id="instructions-container">
+     <p id="title"><strong>Find the right piece!</strong></p>
+     <p>In this HIT, you will see some blocky shapes appear in the rectangle below. Sometimes they will look like one big block, sometimes they will look like a block with a cutout, sometimes they will have pieces missing or floating in the air. Your job is to pay careful attention to these blocks, and <strong>press the spacebar only when you see the exact block below</strong>:</p>
+    <div style="text-align: center;">
+<img id="exampleImage" src="${base_image_path}${target_image}" style="max-width: 250px;">
+</div>
+<p>The images will only flash for a short time, so act quickly!</p>
+<p>If the computer recognizes your button press, the border of the box will briefly turn green. Please test this out now: Press the spacebar a few times, and make sure the border turns green.</p>
+<p>Are you ready to begin? If so, click "Start Experiment".</p>
+<button id="startExperimentButton" class="jspsych-btn">Start Experiment</button>
+</div>
+<div id="gif-feedback-container" class="trial-display-container">
+<div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #666;">
+Test area - press spacebar to see green border
+</div>
+</div>
+`,
+choices: "NO_KEYS",
+on_load: function () {
+const startButton = document.getElementById('startExperimentButton');
+const gifFeedbackContainer = document.getElementById('gif-feedback-container');
 
-            // --- Generate Experiment Trials ---
-            const all_trials_raw = [];
+const testSpacebarHandler = (e) => {
+if (e.key === ' ') {
+gifFeedbackContainer.style.border = `10px solid ${feedbackColor}`;
+setTimeout(() => {
+gifFeedbackContainer.style.border = '10px solid black';
+}, feedbackDuration);
+}
+};
 
-            // Create trials for each maze image
-            for (let img of maze_images) {
-                for (let i = 0; i < nTrialsPerImage; i++) {
-                    all_trials_raw.push({
-                        imageName: img,
-                        is_target: img === target_image
-                    });
-                }
-            }
+document.addEventListener('keydown', testSpacebarHandler);
 
-            // Shuffle the trials
-            const flattened_trials = jsPsych.randomization.shuffle(all_trials_raw);
-            const total_trials = flattened_trials.length;
+startButton.onclick = () => {
+document.removeEventListener('keydown', testSpacebarHandler);
+jsPsych.finishTrial();
+};
+},
+trial_duration: null,
+};
 
-            // Create trial objects
-            const experiment_timeline = flattened_trials.map((trial_data, index) => {
-                const current_image_path = `${base_image_path}${trial_data.imageName}`;
-                const is_target = trial_data.is_target;
+// --- Generate Experiment Trials ---
+const all_trials_raw = [];
 
-                return {
-                    type: jsPsychHtmlKeyboardResponse,
-                    stimulus: `
-                        <div class="trial-container">
-                            <div class="trial-display-container-stimulus">
-                                <img src="${current_image_path}" alt="Trial Image" style="max-width: 100%; max-height: 100%; display: block;">
-                            </div>
-                        </div>
-                    `,
-                    choices: [' '], // Spacebar to respond
-                    stimulus_duration: shapePresentationDuration,
-                    trial_duration: shapePresentationDuration + iti,
-                    response_ends_trial: false,
+// Create trials for each maze image
+for (let img of maze_images) {
+for (let i = 0; i < nTrialsPerImage; i++) {
+all_trials_raw.push({
+imageName: img,
+is_target: img === target_image
+});
+}
+}
 
-                    data: {
-                        trial_num: index + 1,
-                        image_name: trial_data.imageName,
-                        is_target: is_target,
-                        correct_key: is_target ? ' ' : null,
-                    },
-                    
-                    on_load: function () {
-                        const trialDisplayContainer = document.querySelector('.trial-display-container-stimulus');
+// Shuffle the trials
+const flattened_trials = jsPsych.randomization.shuffle(all_trials_raw);
+const total_trials = flattened_trials.length;
 
-                        const trialSpacebarHandler = (e) => {
-                            if (e.key === ' ') {
-                                if (is_target) {
-                                    trialDisplayContainer.style.border = `10px solid ${feedbackColor}`;
-                                } else {
-                                    trialDisplayContainer.style.border = `10px solid ${wrongColor}`;
-                                }
-                                setTimeout(() => {
-                                    trialDisplayContainer.style.border = '10px solid black';
-                                }, feedbackDuration);
-                            }
-                        };
-                        document.addEventListener('keydown', trialSpacebarHandler);
+// Create trial objects
+const experiment_timeline = flattened_trials.map((trial_data, index) => {
+const current_image_path = `${base_image_path}${trial_data.imageName}`;
+const is_target = trial_data.is_target;
 
-                        // Update progress bar
-                        var curr_progress_bar_value = jsPsych.progressBar.progress;
-                        jsPsych.progressBar.progress = curr_progress_bar_value + (1 / total_trials);
+return {
+type: jsPsychHtmlKeyboardResponse,
+stimulus: `
+<div class="trial-container">
+<div class="trial-display-container-stimulus">
+<img src="${current_image_path}" alt="Trial Image" style="max-width: 100%; max-height: 100%; display: block;">
+</div>
+</div>
+`,
+choices: [' '], // Spacebar to respond
+stimulus_duration: shapePresentationDuration,
+trial_duration: shapePresentationDuration + iti,
+response_ends_trial: false,
 
-                        // Clean up event listener when trial finishes
-                        jsPsych.getCurrentTrial().on_finish = function (data) {
-                            document.removeEventListener('keydown', trialSpacebarHandler);
-                            
-                            // Determine correctness
-                            if (is_target) {
-                                data.correct = (data.response !== null);
-                            } else {
-                                data.correct = (data.response === null);
-                            }
-                        };
-                    }
-                };
-            });
+data: {
+trial_num: index + 1,
+image_name: trial_data.imageName,
+is_target: is_target,
+correct_key: is_target ? ' ' : null,
+},
 
-            // --- Construct the Experiment Timeline ---
-            const timeline = [];
-            timeline.push(preload_trial);
-            timeline.push(instructions_page_1);
-            timeline.push(...experiment_timeline);
+on_load: function () {
+const trialDisplayContainer = document.querySelector('.trial-display-container-stimulus');
 
-            // Start the jsPsych experiment!
-            jsPsych.run(timeline);
-        }
+const trialSpacebarHandler = (e) => {
+if (e.key === ' ') {
+if (is_target) {
+trialDisplayContainer.style.border = `10px solid ${feedbackColor}`;
+} else {
+trialDisplayContainer.style.border = `10px solid ${wrongColor}`;
+}
+setTimeout(() => {
+trialDisplayContainer.style.border = '10px solid black';
+}, feedbackDuration);
+}
+};
+document.addEventListener('keydown', trialSpacebarHandler);
 
-        runExperiment();
-    </script>
+// Update progress bar
+var curr_progress_bar_value = jsPsych.progressBar.progress;
+jsPsych.progressBar.progress = curr_progress_bar_value + (1 / total_trials);
 
-    <style>
-        body {
-            font-family: Helvetica, Arial;
-            background-color: white;
-            color: black;
-            font-size: 14pt;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+// Clean up event listener when trial finishes
+jsPsych.getCurrentTrial().on_finish = function (data) {
+document.removeEventListener('keydown', trialSpacebarHandler);
 
-        #jspsych-target {
-            padding: 5vh 2vw;
-            margin: auto;
-            text-align: center;
-            width: 100%;
-            max-width: 1024px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+// Determine correctness
+if (is_target) {
+data.correct = (data.response !== null);
+} else {
+data.correct = (data.response === null);
+}
+};
+}
+};
+});
 
-        .trial-display-container {
-            border: 10px solid black;
-            width: 100%;
-            max-width: 1000px;
-            height: 50vh;
-            padding: 2vh 1vw;
-            margin: 2vh auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            background-color: white;
-        }
+// --- Construct the Experiment Timeline ---
+const timeline = [];
+timeline.push(preload_trial);
+timeline.push(instructions_page_1);
+timeline.push(...experiment_timeline);
 
-        .trial-display-container-stimulus {
-            border: 10px solid black;
-            width: 100%;
-            max-width: 500px;
-            height: 40vh;
-            padding: 2vh 1vw;
-            margin: 2vh auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            background-color: white;
-        }
+// Start the jsPsych experiment!
+jsPsych.run(timeline);
+}
 
-        #instructions-container {
+runExperiment();
+</script>
+
+<style>
+body {
+font-family: Helvetica, Arial;
+background-color: white;
+color: black;
+font-size: 14pt;
+padding: 0;
+margin: 0;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+#jspsych-target {
+padding: 5vh 2vw;
+margin: auto;
+text-align: center;
+width: 100%;
+max-width: 1024px;
+box-sizing: border-box;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+}
+
+.trial-display-container {
+border: 10px solid black;
+width: 100%;
+max-width: 1000px;
+height: 50vh;
+padding: 2vh 1vw;
+margin: 2vh auto;
+display: flex;
+justify-content: center;
+align-items: center;
+box-sizing: border-box;
+background-color: white;
+}
+
+
+.trial-display-container-stimulus {
+border: 10px solid black;
+width: 100%;
+max-width: 500px;
+height: 40vh;
+padding: 2vh 1vw;
+margin: 2vh auto;
+display: flex;
+justify-content: center;
+align-items: center;
+box-sizing: border-box;
+background-color: white;
+}
+
+ #instructions-container {
             max-width: 100%;
             padding: 5vh 2vw;
             box-sizing: border-box;
             text-align: center;
+            margin-top: 100vh;
             align-items: flex-start;
+
         }
 
-        .trial-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 20px;
-        }
+#instructions-container #title {
+    font-size: 24pt; /* Make the font larger and more prominent */
+    font-weight: bold;
+    text-align: center; /* This ensures the text itself is centered */
+    width: 100%; /* Make sure the element takes up the full width of its container */
+    margin-bottom: 30px; /* Add some space below the title */
+    color: #333; /* Use a dark color for better contrast */
+}
 
-        .jspsych-display-element {
+.trial-container {
+width: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+margin-top: 20px;
+}
+
+ .jspsych-display-element {
             margin: 0 auto;
             box-sizing: border-box;
             display: flex;
@@ -279,8 +288,9 @@
             min-height: 250px;
         }
 
-        .trial-display-container img,
-        .trial-display-container-stimulus img {
+
+
+        .trial-display-container img {
             max-width: 100%;
             max-height: 100%;
             display: block;
@@ -288,66 +298,75 @@
         }
 
         #title {
-            font-size: 18pt;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+  font-size: 18pt;
+  text-align: center;
+  margin-bottom: 20px;
+  /* Add display:block to ensure it takes up the full width for centering */
+  display: block; 
+}
 
-        #startExperimentButton {
-            text-align: center;
-            margin: 50px auto;
-            padding: 1rem;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-            box-sizing: border-box;
-        }
+.trial-display-container-stimulus img {
+max-width: 100%;
+max-height: 100%;
+display: block;
+object-fit: contain;
+}
 
-        #doneText pre {
-            font-size: 10px;
-            font-family: Consolas, 'Courier New', monospace;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            text-align: left;
-            max-height: 400px;
-            overflow-y: scroll;
-            border: 1px solid #eee;
-            padding: 10px;
-            background-color: #fff;
-        }
+#startExperimentButton {
+text-align: center;
+margin: 50px auto;
+padding: 1rem;
+border: 1px solid #ccc;
+background-color: #f9f9f9;
+box-sizing: border-box;
+}
 
-        .jspsych-progress-bar-container {
-            display: block;
-            margin-top: 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 5px 0;
-            border-bottom: 1px solid #ddd;
-            background-color: white;
-        }
+#doneText pre {
+font-size: 10px;
+font-family: Consolas, 'Courier New', monospace;
+word-wrap: break-word;
+white-space: pre-wrap;
+text-align: left;
+max-height: 400px;
+overflow-y: scroll;
+border: 1px solid #eee;
+padding: 10px;
+background-color: #fff;
+}
 
-        .jspsych-btn {
-            background-color: #CCCCCC;
-            color: black;
-            border: 3px outset gray;
-            padding: 8px 15px;
-            font-size: 14pt;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+.jspsych-progress-bar-container {
+display: block;
+margin-top: 20px;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+z-index: 1000;
+padding: 5px 0;
+border-bottom: 1px solid #ddd;
+background-color: white;
+}
 
-        .jspsych-btn:hover {
-            border: 3px inset gray;
-        }
+.jspsych-btn {
+background-color: #CCCCCC;
+color: black;
+border: 3px outset gray;
+padding: 8px 15px;
+font-size: 14pt;
+cursor: pointer;
+font-weight: bold;
+margin-top: 10px;
+}
 
-        .jspsych-btn:active {
-            border: 3px inset gray;
-            background: gray;
-        }
-    </style>
+.jspsych-btn:hover {
+border: 3px inset gray;
+}
+
+.jspsych-btn:active {
+border: 3px inset gray;
+background: gray;
+}
+</style>
 
 </body>
 
