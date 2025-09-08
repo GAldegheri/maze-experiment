@@ -26,8 +26,8 @@ const maze_images = [
 ];
 
 const target_image = "maze_goal.png"; // The target image participants should respond to
-const nTrialsPerImage = 15; // How many times each image appears
-const targetRepeats = 5; // How many times target appears per cycle
+const nTrialsPerImage = 40; // How many times each image appears
+const targetRepeats = 15; // How many times target appears per cycle
 
 const iti = 1200; // Inter-trial interval (msec)
 const shapePresentationDuration = 600; // Image display duration (msec)
@@ -36,14 +36,94 @@ const feedbackColor = '#008000'; // Green for correct responses
 const wrongColor = '#FF0000'; // Red for incorrect responses
 const feedbackDuration = 300; // How long the border color stays changed after a response
 
+// Function to download data as CSV
+function downloadData(data, filename) {
+    const csv = jsPsych.data.get().filter({trial_type: 'html-keyboard-response'}).ignore(['stimulus', 'trial_type', 'trial_index', 'time_elapsed', 'internal_node_id']).csv();
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
 async function runExperiment() {
 const jsPsych = initJsPsych({
 on_finish: function (data) {
-document.body.innerHTML = `
-<div id="doneText" style="text-align: center; padding: 20px;">
-<strong>Done! Thank you for your participation.</strong>
-</div>
-`;
+    // Filter data to only include experimental trials (exclude instructions, preload, etc.)
+    const experimentData = data.filter({trial_type: 'html-keyboard-response'}).filterCustom(function(trial) {
+        return trial.image_name !== undefined; // Only trials with image_name are experimental trials
+    });
+    
+    // Create a summary of the data
+    const totalTrials = experimentData.count();
+    const correctTrials = experimentData.filter({correct: true}).count();
+    const accuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(1) : 0;
+    
+    document.body.innerHTML = `
+    <div id="doneText" style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
+        <h2>Experiment Complete!</h2>
+        <p><strong>Thank you for your participation.</strong></p>
+        <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+            <p><strong>Performance Summary:</strong></p>
+            <p>Total Trials: ${totalTrials}</p>
+            <p>Correct Responses: ${correctTrials}</p>
+            <p>Accuracy: ${accuracy}%</p>
+        </div>
+        <button id="downloadBtn" style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 10px;">
+            Download Data (CSV)
+        </button>
+        <button id="viewDataBtn" style="padding: 10px 20px; font-size: 16px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 10px;">
+            View Data
+        </button>
+        <div id="dataDisplay" style="display: none; margin-top: 20px; text-align: left; max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px;">
+        </div>
+    </div>
+    `;
+    
+    // Add event listeners for buttons
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+        const now = new Date();
+        const timestamp = now.getFullYear() + '-' + 
+                         (now.getMonth()+1).toString().padStart(2,'0') + '-' + 
+                         now.getDate().toString().padStart(2,'0') + '_' + 
+                         now.getHours().toString().padStart(2,'0') + '-' + 
+                         now.getMinutes().toString().padStart(2,'0');
+        downloadData(experimentData, `maze_experiment_data_${timestamp}.csv`);
+    });
+    
+    document.getElementById('viewDataBtn').addEventListener('click', function() {
+        const dataDisplay = document.getElementById('dataDisplay');
+        if (dataDisplay.style.display === 'none') {
+            // Create a formatted view of key data columns
+            let tableHTML = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+            tableHTML += '<tr style="background-color: #f8f9fa;"><th style="border: 1px solid #ddd; padding: 8px;">Trial</th><th style="border: 1px solid #ddd; padding: 8px;">Stimulus</th><th style="border: 1px solid #ddd; padding: 8px;">Response</th><th style="border: 1px solid #ddd; padding: 8px;">RT (ms)</th><th style="border: 1px solid #ddd; padding: 8px;">Correct</th></tr>';
+            
+            experimentData.values().forEach(function(trial, index) {
+                const response = trial.response ? 'spacebar' : 'no response';
+                const rt = trial.rt !== null ? trial.rt : 'N/A';
+                tableHTML += `<tr>
+                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${index + 1}</td>
+                    <td style="border: 1px solid #ddd; padding: 5px;">${trial.image_name}</td>
+                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${response}</td>
+                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${rt}</td>
+                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${trial.correct ? 'Yes' : 'No'}</td>
+                </tr>`;
+            });
+            tableHTML += '</table>';
+            
+            dataDisplay.innerHTML = tableHTML;
+            dataDisplay.style.display = 'block';
+            document.getElementById('viewDataBtn').textContent = 'Hide Data';
+        } else {
+            dataDisplay.style.display = 'none';
+            document.getElementById('viewDataBtn').textContent = 'View Data';
+        }
+    });
 },
 show_progress_bar: true,
 message_progress_bar: 'Progress',
@@ -183,11 +263,29 @@ data.correct = (data.response === null);
 };
 });
 
+ // --- Thank You Page ---
+            const thank_you_page = {
+                type: jsPsychHtmlKeyboardResponse,
+                stimulus: `
+                    <div style="text-align: center; padding: 50px; font-size: 18pt;">
+                        <h2>The experiment has ended.</h2>
+                        <p>Thank you for participating.</p>
+                        <p style="font-size: 14pt; margin-top: 30px; color: #666;">
+                            You may now close this window.
+                        </p>
+                    </div>
+                `,
+                choices: "NO_KEYS",
+                trial_duration: null, // Page stays until participant closes window
+            };
+
 // --- Construct the Experiment Timeline ---
 const timeline = [];
 timeline.push(preload_trial);
 timeline.push(instructions_page_1);
 timeline.push(...experiment_timeline);
+timeline.push(thank_you_page); // Add the thank you page at the end
+
 
 // Start the jsPsych experiment!
 jsPsych.run(timeline);
