@@ -26,8 +26,8 @@ const maze_images = [
 ];
 
 const target_image = "maze_goal.png"; // The target image participants should respond to
-const nTrialsPerImage = 40; // How many times each image appears
-const targetRepeats = 15; // How many times target appears per cycle
+const nTrialsPerImage = 30; // How many times each image appears
+const targetRepeats = 10; // How many times target appears per cycle
 
 const iti = 1200; // Inter-trial interval (msec)
 const shapePresentationDuration = 600; // Image display duration (msec)
@@ -71,86 +71,101 @@ on_finish: function (data) {
     
     console.log('Filtered experiment data:', experimentData.values());
     
-    // Create a summary of the data
-    const totalTrials = experimentData.count();
-    const correctTrials = experimentData.filter({correct: true}).count();
-    const accuracy = totalTrials > 0 ? (correctTrials / totalTrials * 100).toFixed(1) : 0;
-    
-    // Store the experiment data globally so it can be accessed by download function
+    // Store data for researcher access (only visible in console/developer tools)
     window.experimentData = experimentData;
+    console.log('CSV Data:', experimentData.ignore(['stimulus', 'trial_type', 'trial_index', 'time_elapsed', 'internal_node_id']).csv());
     
+    // Participant-friendly completion screen (no data shown)
     document.body.innerHTML = `
     <div id="jspsych-target">
-        <div id="doneText" style="text-align: center; padding: 20px; font-family: Arial, sans-serif;">
+        <div id="doneText" style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
             <h2>Experiment Complete!</h2>
-            <p><strong>Thank you for your participation.</strong></p>
-            <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
-                <p><strong>Performance Summary:</strong></p>
-                <p>Total Trials: ${totalTrials}</p>
-                <p>Correct Responses: ${correctTrials}</p>
-                <p>Accuracy: ${accuracy}%</p>
-            </div>
-            <button id="downloadBtn" style="padding: 15px 30px; font-size: 18px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 10px;">
-                📥 Download Data (CSV)
-            </button>
-            <button id="viewDataBtn" style="padding: 15px 30px; font-size: 18px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 10px;">
-                👁️ View Data
-            </button>
-            <div id="dataDisplay" style="display: none; margin-top: 20px; text-align: left; max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px;">
+            <p style="font-size: 20px; margin: 30px 0;"><strong>Thank you for your participation.</strong></p>
+            <p style="font-size: 16px; color: #666; margin-top: 40px;">
+                Your responses have been recorded successfully.
+            </p>
+            <p style="font-size: 16px; color: #666;">
+                You may now close this window or return to Prolific.
+            </p>
+            
+            <!-- Hidden researcher access - only visible if you know to look for it -->
+            <div id="researcherAccess" style="display: none;">
+                <button id="downloadBtn" style="padding: 15px 30px; font-size: 18px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 10px;">
+                    📥 Download Data (CSV)
+                </button>
+                <button id="viewDataBtn" style="padding: 15px 30px; font-size: 18px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin: 10px;">
+                    👁️ View Data
+                </button>
+                <div id="dataDisplay" style="display: none; margin-top: 20px; text-align: left; max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px;">
+                </div>
             </div>
         </div>
     </div>
     `;
     
-    // Add event listeners for buttons with a slight delay to ensure DOM is ready
-    setTimeout(() => {
-        const downloadBtn = document.getElementById('downloadBtn');
-        const viewDataBtn = document.getElementById('viewDataBtn');
-        
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', function() {
-                console.log('Download button clicked');
-                const now = new Date();
-                const timestamp = now.getFullYear() + '-' + 
-                                 (now.getMonth()+1).toString().padStart(2,'0') + '-' + 
-                                 now.getDate().toString().padStart(2,'0') + '_' + 
-                                 now.getHours().toString().padStart(2,'0') + '-' + 
-                                 now.getMinutes().toString().padStart(2,'0');
-                downloadData(window.experimentData, `maze_experiment_data_${timestamp}.csv`);
-            });
-        }
-        
-        if (viewDataBtn) {
-            viewDataBtn.addEventListener('click', function() {
-                const dataDisplay = document.getElementById('dataDisplay');
-                if (dataDisplay.style.display === 'none') {
-                    // Create a formatted view of key data columns
-                    let tableHTML = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
-                    tableHTML += '<tr style="background-color: #f8f9fa;"><th style="border: 1px solid #ddd; padding: 8px;">Trial</th><th style="border: 1px solid #ddd; padding: 8px;">Stimulus</th><th style="border: 1px solid #ddd; padding: 8px;">Response</th><th style="border: 1px solid #ddd; padding: 8px;">RT (ms)</th><th style="border: 1px solid #ddd; padding: 8px;">Correct</th></tr>';
-                    
-                    window.experimentData.values().forEach(function(trial, index) {
-                        const response = trial.response ? 'spacebar' : 'no response';
-                        const rt = trial.rt !== null ? trial.rt : 'N/A';
-                        tableHTML += `<tr>
-                            <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${index + 1}</td>
-                            <td style="border: 1px solid #ddd; padding: 5px;">${trial.image_name}</td>
-                            <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${response}</td>
-                            <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${rt}</td>
-                            <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${trial.correct ? 'Yes' : 'No'}</td>
-                        </tr>`;
+    // Secret researcher access: Type "researcher" to show download buttons
+    let secretCode = "";
+    document.addEventListener('keydown', function(e) {
+        secretCode += e.key.toLowerCase();
+        if (secretCode.includes('researcher')) {
+            document.getElementById('researcherAccess').style.display = 'block';
+            secretCode = ""; // Reset
+            
+            // Add event listeners for buttons
+            setTimeout(() => {
+                const downloadBtn = document.getElementById('downloadBtn');
+                const viewDataBtn = document.getElementById('viewDataBtn');
+                
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', function() {
+                        console.log('Download button clicked');
+                        const now = new Date();
+                        const timestamp = now.getFullYear() + '-' + 
+                                         (now.getMonth()+1).toString().padStart(2,'0') + '-' + 
+                                         now.getDate().toString().padStart(2,'0') + '_' + 
+                                         now.getHours().toString().padStart(2,'0') + '-' + 
+                                         now.getMinutes().toString().padStart(2,'0');
+                        downloadData(window.experimentData, `maze_experiment_data_${timestamp}.csv`);
                     });
-                    tableHTML += '</table>';
-                    
-                    dataDisplay.innerHTML = tableHTML;
-                    dataDisplay.style.display = 'block';
-                    document.getElementById('viewDataBtn').textContent = '🙈 Hide Data';
-                } else {
-                    dataDisplay.style.display = 'none';
-                    document.getElementById('viewDataBtn').textContent = '👁️ View Data';
                 }
-            });
+                
+                if (viewDataBtn) {
+                    viewDataBtn.addEventListener('click', function() {
+                        const dataDisplay = document.getElementById('dataDisplay');
+                        if (dataDisplay.style.display === 'none') {
+                            // Create a formatted view of key data columns
+                            let tableHTML = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+                            tableHTML += '<tr style="background-color: #f8f9fa;"><th style="border: 1px solid #ddd; padding: 8px;">Trial</th><th style="border: 1px solid #ddd; padding: 8px;">Stimulus</th><th style="border: 1px solid #ddd; padding: 8px;">Response</th><th style="border: 1px solid #ddd; padding: 8px;">RT (ms)</th><th style="border: 1px solid #ddd; padding: 8px;">Correct</th></tr>';
+                            
+                            window.experimentData.values().forEach(function(trial, index) {
+                                const response = trial.response ? 'spacebar' : 'no response';
+                                const rt = trial.rt !== null ? trial.rt : 'N/A';
+                                tableHTML += `<tr>
+                                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${index + 1}</td>
+                                    <td style="border: 1px solid #ddd; padding: 5px;">${trial.image_name}</td>
+                                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${response}</td>
+                                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${rt}</td>
+                                    <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${trial.correct ? 'Yes' : 'No'}</td>
+                                </tr>`;
+                            });
+                            tableHTML += '</table>';
+                            
+                            dataDisplay.innerHTML = tableHTML;
+                            dataDisplay.style.display = 'block';
+                            document.getElementById('viewDataBtn').textContent = '🙈 Hide Data';
+                        } else {
+                            dataDisplay.style.display = 'none';
+                            document.getElementById('viewDataBtn').textContent = '👁️ View Data';
+                        }
+                    });
+                }
+            }, 100);
         }
-    }, 100);
+        // Keep only last 10 characters to prevent memory issues
+        if (secretCode.length > 10) {
+            secretCode = secretCode.slice(-10);
+        }
+    });
 },
 show_progress_bar: true,
 message_progress_bar: 'Progress',
