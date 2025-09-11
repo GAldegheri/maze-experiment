@@ -163,7 +163,7 @@
             .then(result => {
             console.log('Data save result:', result);
             
-            const method = result.method === 'server' ? 'uploaded to server' : 'downloaded to your computer';
+            const method = result.method === 'server' ? 'uploaded to the server' : 'downloaded to your computer';
             document.querySelector('.jspsych-content').innerHTML = 
                 `<div style="text-align: center; padding: 40px;">
                 <h2>Thank you for participating!</h2>
@@ -186,7 +186,7 @@
                 </div>`;
             });
             
-            jsPsych.getDisplayElement().classList.remove('hide-cursor');
+            document.documentElement.classList.remove('hide-cursor')
         },
     });
 
@@ -239,12 +239,12 @@
     // --- Hide/show cursor ---
     const hide_cursor = {
         type: jsPsychCallFunction,
-        func: () => jsPsych.getDisplayElement().classList.add('hide-cursor')
+        func: () => document.documentElement.classList.add('hide-cursor')
     };
 
     const show_cursor = {
         type: jsPsychCallFunction,
-        func: () => jsPsych.getDisplayElement().classList.remove('hide-cursor')
+        func: () => document.documentElement.classList.remove('hide-cursor')
     };
 
     // --- Instructions Page ---
