@@ -236,6 +236,11 @@
       fullscreen_mode: true
     };
 
+    const exit_fullscreen = {
+        type: jsPsychFullscreen,
+        fullscreen_mode: false
+    }
+
     // --- Hide/show cursor ---
     const hide_cursor = {
         type: jsPsychCallFunction,
@@ -418,6 +423,7 @@
         func: () => { if (window._unlock) window._unlock(); }
     });
     timeline.push(show_cursor);
+    timeline.push(exit_fullscreen);
 
     jsPsych.run(timeline);
 
