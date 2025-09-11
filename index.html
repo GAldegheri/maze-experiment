@@ -13,6 +13,7 @@
   <script src="https://unpkg.com/@jspsych/plugin-instructions@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0"></script>
 
   <!-- Optional data handler the original file used -->
   <script src="modular-data-handler.js"></script>
@@ -20,7 +21,7 @@
   <style>
     
     :root {
-      --stimulus-size: 1000px; /*400*/
+      --stimulus-size: 400px;
       --frame-border: 10px;
       --frame-color: #000000;
       --feedback-correct: #008000;
@@ -89,6 +90,11 @@
       border-bottom: 1px solid #ddd;
       background-color: #fff;
     }
+
+    .hide-cursor, .hide-cursor * {
+        cursor: none !important;
+    }
+
   </style>
 </head>
 
@@ -179,7 +185,8 @@
                 </button>
                 </div>`;
             });
-        
+            
+            jsPsych.getDisplayElement().classList.remove('hide-cursor');
         },
     });
 
@@ -227,6 +234,17 @@
       type: jsPsychFullscreen,
       message: '<p style="max-width:700px;margin:0 auto;">This experiment works best in fullscreen.</p>',
       fullscreen_mode: true
+    };
+
+    // --- Hide/show cursor ---
+    const hide_cursor = {
+        type: jsPsychCallFunction,
+        func: () => jsPsych.getDisplayElement().classList.add('hide-cursor')
+    };
+
+    const show_cursor = {
+        type: jsPsychCallFunction,
+        func: () => jsPsych.getDisplayElement().classList.remove('hide-cursor')
     };
 
     // --- Instructions Page ---
@@ -365,7 +383,9 @@
     timeline.push(preload_trial);
     timeline.push(enter_fullscreen);
     timeline.push(instructions);
+    timeline.push(hide_cursor);
     timeline.push(main_procedure);
+    timeline.push(show_cursor);
 
     jsPsych.run(timeline);
 
