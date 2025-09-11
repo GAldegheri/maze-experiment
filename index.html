@@ -342,6 +342,30 @@
         };
     }
 
+    function lockPointerForTask() {
+        const el = jsPsych.getDisplayElement();
+
+        function requestLock() {
+            if (document.pointerLockElement !== el) el.requestPointerLock();
+        }
+
+        function onChange() {
+            // If lock is lost mid-trial (e.g., Esc), try to re-lock on next click
+            if (document.pointerLockElement !== el) {
+            el.addEventListener('click', requestLock, { once: true });
+            }
+        }
+
+        document.addEventListener('pointerlockchange', onChange);
+        el.addEventListener('click', requestLock, { once: true }); // first click to lock
+
+        // Return cleanup
+        return () => {
+            document.removeEventListener('pointerlockchange', onChange);
+            if (document.pointerLockElement === el) document.exitPointerLock();
+        };
+    }
+
     // --- Experiment Trials ---
 
     const timeline_variables = Object.keys(TRIAL_CONDITIONS).map(t => ({
@@ -395,7 +419,15 @@
     timeline.push(enter_fullscreen);
     timeline.push(instructions);
     timeline.push(hide_cursor);
+    timeline.push({
+        type: jsPsychCallFunction,
+        func: () => { window._unlock = lockPointerForTask(); }
+    });
     timeline.push(main_procedure);
+    timeline.push({
+        type: jsPsychCallFunction,
+        func: () => { if (window._unlock) window._unlock(); }
+    });
     timeline.push(show_cursor);
 
     jsPsych.run(timeline);
