@@ -95,6 +95,17 @@
         cursor: none !important;
     }
 
+    /* Also cover when any element is in fullscreen (some browsers re-apply cursor rules) */
+    :fullscreen, :fullscreen * {
+        cursor: none !important;
+    }
+
+    /* Belt-and-braces: explicitly target jsPsych's container in fullscreen */
+    .jspsych-display-element:fullscreen,
+    .jspsych-display-element:fullscreen * {
+        cursor: none !important;
+    }
+
   </style>
 </head>
 
