@@ -421,7 +421,6 @@
     timeline.push(enter_fullscreen);
     timeline.push(instructions);
     timeline.push(hide_cursor);
-    timeline.push(final_survey);
     timeline.push({
         type: jsPsychCallFunction,
         func: () => { window._unlock = lockPointerForTask(); }
@@ -431,6 +430,7 @@
         type: jsPsychCallFunction,
         func: () => { if (window._unlock) window._unlock(); }
     });
+    timeline.push(final_survey);
     timeline.push(show_cursor);
     timeline.push(exit_fullscreen);
 
