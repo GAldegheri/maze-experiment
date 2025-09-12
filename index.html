@@ -84,6 +84,7 @@
         text-align: center;
         user-select: none;
         line-height: 1.2;
+        min-height: 1.43m;
     }
 
    .stimulus-frame.frame-correct { border-color: var(--feedback-correct) !important; }
@@ -418,10 +419,12 @@
 
             // show stimulus
             img.src = pickStimulus();
+            instr.style.visibility = 'visible';
 
             // hide stimulus after the usual flash duration (frame stays visible)
             timers.push(setTimeout(() => {
                 img.removeAttribute('src'); // blank during ITI
+                instr.style.visibility = 'hidden'; // also hide instruction
             }, shapePresentationDuration));
 
             // schedule next cycle (stimulus + ITI)
