@@ -365,70 +365,61 @@
         };
     }
 
-    // --- Practice screen ---
-    
     const practice_screen = {
         type: jsPsychHtmlButtonResponse,
         stimulus: `
-            <div id="practice-wrap" style="display:flex;flex-direction:column;align-items:center;">
-            <div id="practice-frame" class="stimulus-frame"></div>
+            <div style="display:flex;flex-direction:column;align-items:center;">
+            <div id="stimulus-frame" class="stimulus-frame">
+                <!-- IMPORTANT: same ID as the main task uses -->
+                <img id="jspsych-image-keyboard-response-stimulus" alt="" />
+            </div>
             <p id="practice-instruction" style="margin-top:12px;font-weight:600;"></p>
             </div>
         `,
-        choices: ['Start the experiment'],
-        button_html: '<button class="jspsych-btn">%choice%</button>',
-        on_load: function() {
-            const frame = document.getElementById('practice-frame');
+        choices: ['Start the experiment'],   // let plugin use its default button HTML (no button_html param)
+        on_load: function () {
+            const frame = document.getElementById('stimulus-frame');
+            const img   = document.getElementById('jspsych-image-keyboard-response-stimulus');
             const instr = document.getElementById('practice-instruction');
 
-            // Create the <img> that will flash inside the persistent frame
-            const img = document.createElement('img');
-            img.id = 'practice-stimulus';
-            frame.appendChild(img);
-
             let isTarget = false;
-            let responded = false;
             let stopped = false;
             const timers = [];
 
+            // pick a random condition each cycle
             function pickStimulus() {
-                // pick one condition at random each cycle
-                const tv = jsPsych.randomization.sampleWithoutReplacement(timeline_variables, 1)[0];
-                isTarget = (tv.trial_condition === 'target');
-                instr.textContent = isTarget ? 'Press the spacebar' : 'Do NOT press the spacebar';
-                return tv.image_path;
+            const tv = jsPsych.randomization.sampleWithoutReplacement(timeline_variables, 1)[0];
+            isTarget = (tv.trial_condition === 'target');
+            instr.textContent = isTarget ? 'Press the spacebar' : 'Do NOT press the spacebar';
+            return tv.image_path;
             }
 
             function cycle() {
-                if (stopped) return;
+            if (stopped) return;
 
-                // Show a stimulus
-                img.src = pickStimulus();
-                responded = false;
+            // show stimulus
+            img.src = pickStimulus();
 
-                // hide the stimulus after shapePresentationDuration (frame stays visible)
-                timers.push(setTimeout(() => {
-                    img.removeAttribute('src'); // blank during ITI
-                }, shapePresentationDuration));
+            // hide stimulus after the usual flash duration (frame stays visible)
+            timers.push(setTimeout(() => {
+                img.removeAttribute('src'); // blank during ITI
+            }, shapePresentationDuration));
 
-                // schedule next cycle after stimulus + ITI
-                timers.push(setTimeout(cycle, shapePresentationDuration + iti));
+            // schedule next cycle (stimulus + ITI)
+            timers.push(setTimeout(cycle, shapePresentationDuration + iti));
             }
-            
+
             function onKey(e) {
-                if (e.key !== ' ') return;
-                e.preventDefault(); // avoid scrolling, etc.
+            if (e.key !== ' ') return;
+            e.preventDefault();
 
-                // same feedback as in the task: green if target, red if non-target
+            // same feedback rule as the task: green on target, red on non-target
+            frame.classList.remove('frame-correct', 'frame-wrong');
+            frame.classList.add(isTarget ? 'frame-correct' : 'frame-wrong');
+
+            setTimeout(() => {
                 frame.classList.remove('frame-correct', 'frame-wrong');
-                frame.classList.add(isTarget ? 'frame-correct' : 'frame-wrong');
-
-                // brief color, then clear
-                setTimeout(() => {
-                    frame.classList.remove('frame-correct', 'frame-wrong');
-                }, feedbackDuration);
-
-                responded = true;
+            }, feedbackDuration);
             }
 
             document.addEventListener('keydown', onKey);
@@ -436,17 +427,18 @@
 
             // cleanup when the button is clicked
             window._practice_cleanup = () => {
-                stopped = true;
-                timers.forEach(clearTimeout);
-                document.removeEventListener('keydown', onKey);
-                frame.classList.remove('frame-correct', 'frame-wrong');
-                img.removeAttribute('src');
+            stopped = true;
+            timers.forEach(clearTimeout);
+            document.removeEventListener('keydown', onKey);
+            frame.classList.remove('frame-correct', 'frame-wrong');
+            img.removeAttribute('src');
             };
         },
-        on_finish: function() {
+        on_finish: function () {
             if (window._practice_cleanup) window._practice_cleanup();
         }
-    }
+    };
+
 
     // --- Experiment Trials ---
 
