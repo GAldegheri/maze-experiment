@@ -23,6 +23,7 @@
     
     :root {
       --stimulus-size: 350px;
+      --frame-gap: 20px;
       --frame-border: 10px;
       --frame-color: #000000;
       --feedback-correct: #008000;
@@ -55,14 +56,16 @@
     }
 
     .stimulus-frame {
-        width: var(--stimulus-size);
-        height: var(--stimulus-size);
+        width:  calc(var(--stimulus-size) + 2 * var(--frame-gap));
+        height: calc(var(--stimulus-size) + 2 * var(--frame-gap));
+        padding: var(--frame-gap);
         border: var(--frame-border) solid var(--frame-color);
         margin: 2vh auto;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #fff;
+        box-sizing: content-box;
     }
 
    .stimulus-frame.frame-correct { border-color: var(--feedback-correct) !important; }
@@ -70,10 +73,10 @@
 
     /* size the stimulus image (if rendered as <img>) */
     #jspsych-image-keyboard-response-stimulus {
+        width:  var(--stimulus-size);
+        height: auto;
         max-width: 100%;
         max-height: 100%;
-        width: 100%;     /* fills the frame’s width */
-        height: auto;    /* keeps aspect ratio */
         display: block;
     }
 
@@ -430,8 +433,8 @@
         type: jsPsychCallFunction,
         func: () => { if (window._unlock) window._unlock(); }
     });
-    timeline.push(final_survey);
     timeline.push(show_cursor);
+    timeline.push(final_survey);
     timeline.push(exit_fullscreen);
 
     jsPsych.run(timeline);
