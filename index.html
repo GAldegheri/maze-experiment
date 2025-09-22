@@ -23,13 +23,16 @@
   <style>
     
     :root {
-      --stimulus-size: 200px;
+      --stimulus-size: 250px;
       --frame-gap: 80px;
       --frame-border: 20px;
       --frame-color: #000000;
       --feedback-correct: #008000;
       --feedback-wrong: #FF0000; /* reserved if you later add wrong feedback */
       --content-max: 1024px;
+      --fixation-color: #808080;
+      --fixation-size: 28px;
+      --fixation-thickness: 3px;
     }
 
     html, body {
@@ -57,6 +60,7 @@
     }
 
     .stimulus-frame {
+        position: relative;
         width:  calc(var(--stimulus-size) + 2 * var(--frame-gap));
         height: calc(var(--stimulus-size) + 2 * var(--frame-gap));
         padding: var(--frame-gap);
@@ -71,6 +75,7 @@
     }
 
     .stimulus-frame .frame-content {
+        position: relative;
         flex: 1;
         width: 100%;
         display: flex;
@@ -116,6 +121,43 @@
 
     .hide-cursor, .hide-cursor * {
         cursor: none !important;
+    }
+
+    /* Fixation cross (always visible) */
+    .fixation {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: var(--fixation-size);
+        height: var(--fixation-size);
+        transform: translate(-50%, -50%);
+        pointer-events: none;      /* never intercept clicks/locks */
+        z-index: 10;   
+    }
+
+    .fixation::before,
+    .fixation::after {
+        content: "";
+        position: absolute;
+        background: var(--fixation-color);
+    }
+
+    /* vertical bar */
+    .fixation::before {
+    left: 50%;
+    top: 0;
+    width: var(--fixation-thickness);
+    height: 100%;
+    transform: translateX(-50%);
+    }
+
+    /* horizontal bar */
+    .fixation::after {
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: var(--fixation-thickness);
+    transform: translateY(-50%);
     }
 
   </style>
@@ -305,6 +347,21 @@
             frame.className = 'stimulus-frame'; // reset border color classes
         }
 
+        let content = frame.querySelector('.frame-content');
+        if (!content) {
+            content = document.createElement('div');
+            content.className = 'frame-content';
+            frame.appendChild(content);
+        }
+
+        let fixation = content.querySelector('.fixation');
+        if (!fixation) {
+            fixation = document.createElement('div');
+            fixation.className = 'fixation';
+            fixation.setAttribute('aria-hidden', 'true');
+            content.appendChild(fixation);
+        }
+
         // 2) Move the stimulus into the frame whenever it (re)appears
         let isTarget = null; // cached as soon as we see the stimulus
 
@@ -389,6 +446,7 @@
         <div style="display:flex;flex-direction:column;align-items:center;">
             <div id="stimulus-frame" class="stimulus-frame">
             <div class="frame-content">
+                <div class="fixation" aria-hidden="true"></div>
                 <!-- IMPORTANT: same ID as the main task stimulus -->
                 <img id="jspsych-image-keyboard-response-stimulus" alt="" />
             </div>
