@@ -351,8 +351,6 @@
             frame.id = 'stimulus-frame';
             frame.className = 'stimulus-frame';
             root.appendChild(frame);
-        } else {
-            frame.className = 'stimulus-frame'; // reset border color classes
         }
 
         let content = frame.querySelector('.frame-content');
@@ -390,13 +388,11 @@
             // Determine target/non-target from the <img src>
             // Works because you set render_on_canvas:false (so it’s an <img>)
             if (isTarget === null && stim.tagName === 'IMG') {
-            try {
                 const src = stim.getAttribute('src') || '';
-                // Use endsWith to avoid absolute/relative path differences
-                isTarget = src.endsWith('/' + target_image) || src.endsWith('\\' + target_image) || src.endsWith(target_image);
-            } catch (_) {
-                isTarget = false;
-            }
+                isTarget =
+                    src.endsWith('/' + target_image) ||
+                    src.endsWith('\\' + target_image) ||
+                    src.endsWith(target_image);
             }
         };
 
