@@ -59,6 +59,14 @@
       min-height: 60vh;
     }
 
+    /* Shrink-wraps to the image size so absolute centering matches the maze exactly */
+    .stimulus-overlay {
+        position: relative;
+        display: inline-block; /* shrink to image dimensions */
+        line-height: 0;        /* remove inline spacing */
+    }
+
+
     .stimulus-frame {
         position: relative;
         width:  calc(var(--stimulus-size) + 2 * var(--frame-gap));
@@ -144,20 +152,20 @@
 
     /* vertical bar */
     .fixation::before {
-    left: 50%;
-    top: 0;
-    width: var(--fixation-thickness);
-    height: 100%;
-    transform: translateX(-50%);
+        left: 50%;
+        top: 0;
+        width: var(--fixation-thickness);
+        height: 100%;
+        transform: translateX(-50%);
     }
 
     /* horizontal bar */
     .fixation::after {
-    left: 0;
-    top: 50%;
-    width: 100%;
-    height: var(--fixation-thickness);
-    transform: translateY(-50%);
+        left: 0;
+        top: 50%;
+        width: 100%;
+        height: var(--fixation-thickness);
+        transform: translateY(-50%);
     }
 
   </style>
@@ -354,6 +362,13 @@
             frame.appendChild(content);
         }
 
+        let overlay = content.querySelector('.stimulus-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'stimulus-overlay';
+            content.appendChild(overlay);
+        }
+
         let fixation = content.querySelector('.fixation');
         if (!fixation) {
             fixation = document.createElement('div');
@@ -369,8 +384,8 @@
             const stim = root.querySelector('#jspsych-image-keyboard-response-stimulus');
             if (!stim) return;
 
-            // Move stimulus into the persistent frame
-            if (stim.parentElement !== frame) frame.appendChild(stim);
+            // Move stimulus into the overlay
+            if (stim.parentElement !== overlay) overlay.appendChild(stim);
 
             // Determine target/non-target from the <img src>
             // Works because you set render_on_canvas:false (so it’s an <img>)
@@ -446,9 +461,10 @@
         <div style="display:flex;flex-direction:column;align-items:center;">
             <div id="stimulus-frame" class="stimulus-frame">
             <div class="frame-content">
-                <div class="fixation" aria-hidden="true"></div>
+                <div class="stimulus-overlay">
                 <!-- IMPORTANT: same ID as the main task stimulus -->
                 <img id="jspsych-image-keyboard-response-stimulus" alt="" />
+                <div class="fixation" aria-hidden="true"></div>
             </div>
             <p id="practice-instruction" class="frame-caption"></p>
             </div>
