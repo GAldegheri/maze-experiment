@@ -106,11 +106,12 @@
 
     /* size the stimulus image (if rendered as <img>) */
     #jspsych-image-keyboard-response-stimulus {
-        width: auto;
-        height: auto;
-        max-width: 100%;
-        max-height: 100%;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;   /* preserve aspect ratio */
         display: block;
+        /* optional for crisper pixels on blocky sprites:
+        image-rendering: pixelated;  */
     }
 
 
@@ -368,12 +369,12 @@
             content.appendChild(overlay);
         }
 
-        let fixation = content.querySelector('.fixation');
+        let fixation = overlay.querySelector('.fixation');
         if (!fixation) {
             fixation = document.createElement('div');
             fixation.className = 'fixation';
             fixation.setAttribute('aria-hidden', 'true');
-            content.appendChild(fixation);
+            overlay.appendChild(fixation);
         }
 
         // 2) Move the stimulus into the frame whenever it (re)appears
@@ -462,13 +463,13 @@
         stimulus: `
         <div style="display:flex;flex-direction:column;align-items:center;">
             <div id="stimulus-frame" class="stimulus-frame">
-            <div class="frame-content">
-                <div class="stimulus-overlay">
-                <img id="jspsych-image-keyboard-response-stimulus" alt="" />
-                <div class="fixation" aria-hidden="true"></div>
+                <div class="frame-content">
+                    <div class="stimulus-overlay">
+                        <img id="jspsych-image-keyboard-response-stimulus" alt="" />
+                    <div class="fixation" aria-hidden="true"></div>
+                </div>
             </div>
             <p id="practice-instruction" class="frame-caption"></p>
-            </div>
         </div>
         `,
         choices: ['Start the experiment'],   // let plugin use its default button HTML (no button_html param)
