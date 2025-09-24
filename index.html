@@ -68,6 +68,13 @@
         line-height: 0;
     }
 
+    /* Hide the img if there's no real source (during ISI or load errors) */
+    .stimulus-overlay img[src=""],
+    .stimulus-overlay img:not([src]),
+    .stimulus-overlay img.broken {
+        display: none;
+    }
+
 
     .stimulus-frame {
         position: relative;
@@ -387,6 +394,14 @@
             // Move stimulus into the overlay
             if (stim.parentElement !== overlay) {
                 overlay.appendChild(stim);
+
+                // attach once per <img> element
+                stim.addEventListener('load', () => { stim.classList.remove('broken'); stim.style.opacity = '1'; }, {once: true});
+                stim.addEventListener('error', () => { stim.classList.add('broken');}, {once: true});
+
+                // if src is currently empty (typical during ISI), hide now
+                const hasSrc = !!stim.getAttribute('src');
+                stim.style.opacity = hasSrc ? '1' : '0';
             }
 
             // Determine target/non-target from the <img src>
