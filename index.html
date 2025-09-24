@@ -21,163 +21,121 @@
   <script src="modular-data-handler.js"></script>
 
   <style>
-    
-    :root {
-      --stimulus-size: 250px;
-      --frame-gap: 80px;
-      --frame-border: 20px;
-      --frame-color: #000000;
-      --feedback-correct: #008000;
-      --feedback-wrong: #FF0000; /* reserved if you later add wrong feedback */
-      --content-max: 1024px;
-      --fixation-color: #808080;
-      --fixation-size: 28px;
-      --fixation-thickness: 3px;
-    }
+  :root{
+    /* sizing */
+    --stimulus-size: 350px;          /* inner drawable square */
+    --frame-gap: 50px;               /* padding between image and frame */
+    --frame-border: 12px;            /* frame thickness */
+    --frame-color: #000;
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      color: #000;
-      font-family: Helvetica, Arial, sans-serif;
-      font-size: 16px;
-    }
+    /* fixation */
+    --fixation-color: #0b5d0b;       /* dark green */
+    --fixation-size: 28px;
+    --fixation-thickness: 3px;
+  }
 
-    /* Keep jsPsych centered and sized */
-    .jspsych-content {
-      max-width: var(--content-max);
-      margin: 0 auto;
-      padding: 5vh 2vw;
-      box-sizing: border-box;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 60vh;
-    }
+  /* ===== Outer frame (black square around the maze) ===== */
+  .stimulus-frame{
+    position: relative;
+    width:  calc(var(--stimulus-size) + 2 * var(--frame-gap));
+    height: calc(var(--stimulus-size) + 2 * var(--frame-gap));
+    padding: var(--frame-gap);
+    border: var(--frame-border) solid var(--frame-color);
+    margin: 2vh auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-sizing: content-box;
+  }
 
-    /* Shrink-wraps to the image size so absolute centering matches the maze exactly */
-    .stimulus-overlay {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: block;
-        line-height: 0;
-    }
+  /* ===== Fixed inner square the maze must fit in ===== */
+  .stimulus-frame > .frame-content{
+    position: relative;
+    width: var(--stimulus-size) !important;
+    height: var(--stimulus-size) !important;
+    flex: 0 0 auto !important;          /* never stretch */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    aspect-ratio: 1 / 1;                 /* belt & suspenders */
+  }
 
-    /* Hide the img if there's no real source (during ISI or load errors) */
-    .stimulus-overlay img[src=""],
-    .stimulus-overlay img:not([src]),
-    .stimulus-overlay img.broken {
-        display: none;
-    }
+  /* ===== Overlay that covers the inner square exactly ===== */
+  .stimulus-overlay{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+    line-height: 0;
+  }
 
+  /* ===== The maze image itself =====
+     Fit inside the square (scale up/down, keep aspect) */
+  #jspsych-image-keyboard-response-stimulus{
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
 
-    .stimulus-frame {
-        position: relative;
-        width:  calc(var(--stimulus-size) + 2 * var(--frame-gap));
-        height: calc(var(--stimulus-size) + 2 * var(--frame-gap));
-        padding: var(--frame-gap);
-        border: var(--frame-border) solid var(--frame-color);
-        margin: 2vh auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: #fff;
-        box-sizing: content-box;
-    }
+  /* Hide the browser "broken image" icon during ISI / empty src */
+  .stimulus-overlay img[src=""],
+  .stimulus-overlay img:not([src]),
+  .stimulus-overlay img.broken{
+    opacity: 0; /* keep layout so fixation stays centered */
+  }
 
-    .stimulus-frame .frame-content {
-        position: relative;
-        width: var(--stimulus-size);
-        height: var(--stimulus-size);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-    }
+  /* ===== Fixation cross (on top of the maze) ===== */
+  .fixation{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--fixation-size);
+    height: var(--fixation-size);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
+  }
+  .fixation::before,
+  .fixation::after{
+    content: "";
+    position: absolute;
+    background: var(--fixation-color);
+  }
+  /* vertical bar */
+  .fixation::before{
+    left: 50%;
+    top: 0;
+    width: var(--fixation-thickness);
+    height: 100%;
+    transform: translateX(-50%);
+  }
+  /* horizontal bar */
+  .fixation::after{
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: var(--fixation-thickness);
+    transform: translateY(-50%);
+  }
 
-    .frame-caption {
-        margin-top: 8px;
-        font-weight: 600;
-        text-align: center;
-        line-height: 1.2;
-    }
+  /* ===== Practice caption goes BELOW the square ===== */
+  .frame-caption{
+    margin-top: 8px;
+    text-align: center;
+    line-height: 1.2;
+  }
 
-   .stimulus-frame.frame-correct { border-color: var(--feedback-correct) !important; }
-   .stimulus-frame.frame-wrong   { border-color: var(--feedback-wrong) !important; }
+  /* ===== Optional feedback colors on the frame border ===== */
+  .frame-correct{ border-color: #2ecc71 !important; }
+  .frame-wrong{   border-color: #e74c3c !important; }
+</style>
 
-    /* size the stimulus image (if rendered as <img>) */
-    #jspsych-image-keyboard-response-stimulus {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;   /* preserve aspect ratio */
-        display: block;
-        /* optional for crisper pixels on blocky sprites:
-        image-rendering: pixelated;  */
-    }
-
-
-    /* Fixed progress bar at top (using jsPsych's built-in container) */
-    .jspsych-progress-bar-container {
-      display: block;
-      margin-top: 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1000;
-      padding: 6px 0;
-      border-bottom: 1px solid #ddd;
-      background-color: #fff;
-    }
-
-    .hide-cursor, .hide-cursor * {
-        cursor: none !important;
-    }
-
-    /* Fixation cross (always visible) */
-    .fixation {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: var(--fixation-size);
-        height: var(--fixation-size);
-        transform: translate(-50%, -50%);
-        pointer-events: none;      /* never intercept clicks/locks */
-        z-index: 10;   
-    }
-
-    .fixation::before,
-    .fixation::after {
-        content: "";
-        position: absolute;
-        background: var(--fixation-color);
-    }
-
-    /* vertical bar */
-    .fixation::before {
-        left: 50%;
-        top: 0;
-        width: var(--fixation-thickness);
-        height: 100%;
-        transform: translateX(-50%);
-    }
-
-    /* horizontal bar */
-    .fixation::after {
-        left: 0;
-        top: 50%;
-        width: 100%;
-        height: var(--fixation-thickness);
-        transform: translateY(-50%);
-    }
-
-  </style>
 </head>
 
 <body>
@@ -369,6 +327,12 @@
             frame.appendChild(content);
         }
 
+        // read --stimulus-size and lock it inline
+        const cssSize = getComputedStyle(frame).getPropertyValue('--stimulus-size').trim() || '350px';
+        content.style.width = cssSize;
+        content.style.height = cssSize;
+        content.style.flex = '0 0 auto';
+
         let overlay = content.querySelector('.stimulus-overlay');
         if (!overlay) {
             overlay = document.createElement('div');
@@ -394,6 +358,14 @@
             // Move stimulus into the overlay
             if (stim.parentElement !== overlay) {
                 overlay.appendChild(stim);
+
+                // remove HTML attrs that can override CSS sizing
+                stim.removeAttribute('width');
+                stim.removeAttribute('height');
+                // enforce our sizing
+                stim.style.width = '100%';
+                stim.style.height = '100%';
+                stim.style.objectFit = 'contain';
 
                 // attach once per <img> element
                 stim.addEventListener('load', () => { stim.classList.remove('broken'); stim.style.opacity = '1'; }, {once: true});
